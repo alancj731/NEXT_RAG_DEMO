@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { UIMessage } from "ai";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,15 +19,17 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   
   // Initialize state from localStorage or use default
   const [msgHistory, setMsgHistoryState] = useState<UIMessage[]>(() => {
-    // if (typeof window !== 'undefined') {
-    //   const saved = localStorage.getItem('messageHistory');
-    //   return saved ? JSON.parse(saved) : [initialMessage];
-    // }
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('messageHistory');
+      return saved ? JSON.parse(saved) : [initialMessage];
+    }
+    console.log('initial messages 26:', initialMessage)
     return [initialMessage];
   });
 
   // Custom setter that updates both state and localStorage
   const setMsgHistory = (messages: UIMessage[]) => {
+    console.log('setMsgHistory touched:', messages)
     setMsgHistoryState(messages);
     if (typeof window !== 'undefined') {
       localStorage.setItem('messageHistory', JSON.stringify(messages));
@@ -36,13 +38,19 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
 
   // Sync with localStorage when state changes
   useEffect(() => {
-    // if (typeof window !== 'undefined') {
-    //   localStorage.setItem('messageHistory', JSON.stringify(msgHistory));
-    // }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('messageHistory', JSON.stringify(msgHistory));
+    }
+    console.log('msgHistory changed:', msgHistory)
   }, [msgHistory]);
 
+  const contextValue = useMemo(() => ({ 
+    msgHistory, 
+    setMsgHistory 
+  }), [msgHistory, setMsgHistory]);
+
   return (
-    <AppContext.Provider value={{ msgHistory, setMsgHistory }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

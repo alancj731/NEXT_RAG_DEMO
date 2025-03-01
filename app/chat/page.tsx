@@ -1,27 +1,47 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
-import { Message } from "ai";
 import { User, BotMessageSquare } from "lucide-react";
+import { useEffect} from "react";
+// import { useMessageStore } from "@/store/messageStore";
 import { useAppContext } from "@/context/AppContext";
-import { useRef, useEffect} from "react";
 
 export default function Chat() {
-  const { append, setMessages, messages, input, handleInputChange, handleSubmit } =
+  const { setMessages, messages, input, handleInputChange, handleSubmit } =
     useChat();
-  const { msgHistory, setMsgHistory } = useAppContext();
+  
+  // const { msgHistory, setMsgHistory } = useMessageStore();
+  const [msgHistory, setMsgHistory] = useAppContext();
 
   useEffect(() => {
-    setMessages(msgHistory);
-  }, []);
+    setMessages([...msgHistory]);
+  },[]);
+
+  // useEffect(() => {
+  //   setMessages([...msgHistory.values()]);
+  //   console.log('initial msgHistory:', msgHistory);
+  // }, [msgHistory, setMessages]);
 
   useEffect(() => {
-    setMsgHistory(messages);
+    console.log('messages changed:', messages)
+    if(messages.length > 1){
+      console.log('changing msgHistory... because messages changed:', messages)
+      setMsgHistory([...messages]);
+    }
     }, [messages]);
 
   const myHandleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(messages);
+    console.log('myHandleInputChange...')
     handleInputChange(e);
   };
+
+  const myHandleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('myHandleSubmit...')
+    setMsgHistory([...messages]);
+    e.preventDefault();
+    handleSubmit(e);
+  };
+  
+  
   return (
     <div className="flex flex-col w-full max-w-md py-24 space-y-4 px-2 stretch">
       {messages.map((m) => (
@@ -43,7 +63,7 @@ export default function Chat() {
         </div>
       ))}
 
-      <form onSubmit={handleSubmit} className="flex">
+      <form onSubmit={myHandleSubmit} className="flex">
         <input
           className="fixed dark:bg-zinc-900 bottom-8 w-full max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
           value={input}

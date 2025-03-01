@@ -3,7 +3,7 @@ import { scrapePage } from "@/lib/scraper";
 import { getQueryParams } from "@/lib/utils";
 import { saveToCollection } from "@/repository/astra_db";
 
-export async function GET(req: NextRequest, res: NextResponse) {
+export async function GET(req: NextRequest) {
     const url = getQueryParams(req, 'url');
 
     if (url === null) {

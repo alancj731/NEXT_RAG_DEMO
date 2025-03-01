@@ -1,6 +1,5 @@
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
-import { myopenai } from "@/lib/openai";
 import { db } from "@/repository/astra_db";
 
 // Allow streaming responses up to 30 seconds, used in the vercel EDGE function
@@ -9,33 +8,20 @@ const { NEXT_PUBLIC_ASTRA_DB_COLLECTION } = process.env;
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
+
   if (!messages || messages.length === 0) {
     return new Response("No messages provided", { status: 400 });
   }
+
+  console.log('messages got in backend:', messages)
+
   const lastMessage = messages[messages.length - 1];
-  console.log("lastMessage:", lastMessage);
 
   let docContext = "";
 
   try {
     try {
-      // const ai = myopenai();
-      // const embedding = await ai.embeddings.create({
-      //   model: "text-embedding-3-small",
-      //   input: lastMessage.content,
-      //   encoding_format: "float",
-      // });
-
-      // console.log("embedding:", embedding.data[0].embedding);
-
-      // if (embedding && embedding.data && embedding.data.length > 0) {
-        const collection = db.collection(NEXT_PUBLIC_ASTRA_DB_COLLECTION || "");
-        // const cursor = collection.find({
-        //   limit: 3,
-        //   sort: {"$vector": embedding.data[0].embedding },
-        // });
-        // const documents = await cursor.toArray();
-
+        const collection = db.collection(NEXT_PUBLIC_ASTRA_DB_COLLECTION || "")
         const cursor =  collection
           .find(
             {},
@@ -47,7 +33,6 @@ export async function POST(req: Request) {
 
         const documents = await cursor.toArray();
         const docsMap = documents?.map((doc) => doc.text);
-        console.log("docsMap:", docsMap);
         docContext = JSON.stringify(docsMap);
       }
     catch (error) {
@@ -79,6 +64,8 @@ export async function POST(req: Request) {
     console.log("template:", template);
 
     messages.push(template);
+    
+    console.log('final messges sent to openAI:', messages)
 
     const result = streamText({
       model: openai("gpt-4o-mini"),
@@ -87,6 +74,7 @@ export async function POST(req: Request) {
 
     // return result.toDataStreamResponse();
     const readableStream = result.toDataStreamResponse().body;
+
     return new Response(readableStream, {
       headers: {
         'Content-Type': 'text/event-stream',
@@ -99,11 +87,4 @@ export async function POST(req: Request) {
     console.error("Error getting openAi response:", error);
     return new Response("Error getting openAi response", { status: 500 });
   }
-
-  //   const result = streamText({
-  //     model: openai("gpt-4o-mini"),
-  //     messages,
-  //   });
-
-  //   return result.toDataStreamResponse();
 }
