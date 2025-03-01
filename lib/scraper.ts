@@ -21,7 +21,6 @@ export async function scrapePage(
 
     const textContent = htmlContent.replace(/<[^>]*>?/gm, "");
 
-    console.log(textContent);
 
     return textContent;
   } catch (e) {

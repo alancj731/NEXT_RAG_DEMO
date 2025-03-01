@@ -14,7 +14,7 @@ export default function Rag() {
     const urlApi = `/api/web?url=${encodeURI(url)}`;
     setIsLoading(true);
     try {
-      const textFromWebPage = await fetch(urlApi).then((res) => res.text());
+      await fetch(urlApi).then((res) => res.text());
       return true;
     } catch (e) {
       console.log(e);
@@ -38,7 +38,7 @@ export default function Rag() {
 
   async function handleFileSubmit(fileName: string) {
     setFileName(fileName);
-    console.log("Importing file:", fileName);
+    console.log("Have not completed this feature.");
   }
 
 

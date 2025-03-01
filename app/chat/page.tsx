@@ -10,32 +10,23 @@ export default function Chat() {
     useChat();
   
   // const { msgHistory, setMsgHistory } = useMessageStore();
-  const [msgHistory, setMsgHistory] = useAppContext();
+  const {msgHistory, setMsgHistory} = useAppContext();
 
   useEffect(() => {
     setMessages([...msgHistory]);
   },[]);
 
-  // useEffect(() => {
-  //   setMessages([...msgHistory.values()]);
-  //   console.log('initial msgHistory:', msgHistory);
-  // }, [msgHistory, setMessages]);
-
   useEffect(() => {
-    console.log('messages changed:', messages)
     if(messages.length > 1){
-      console.log('changing msgHistory... because messages changed:', messages)
       setMsgHistory([...messages]);
     }
     }, [messages]);
 
   const myHandleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('myHandleInputChange...')
     handleInputChange(e);
   };
 
   const myHandleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    console.log('myHandleSubmit...')
     setMsgHistory([...messages]);
     e.preventDefault();
     handleSubmit(e);

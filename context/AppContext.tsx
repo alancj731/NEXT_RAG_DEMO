@@ -23,13 +23,11 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
       const saved = localStorage.getItem('messageHistory');
       return saved ? JSON.parse(saved) : [initialMessage];
     }
-    console.log('initial messages 26:', initialMessage)
     return [initialMessage];
   });
 
   // Custom setter that updates both state and localStorage
   const setMsgHistory = (messages: UIMessage[]) => {
-    console.log('setMsgHistory touched:', messages)
     setMsgHistoryState(messages);
     if (typeof window !== 'undefined') {
       localStorage.setItem('messageHistory', JSON.stringify(messages));
@@ -41,16 +39,10 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('messageHistory', JSON.stringify(msgHistory));
     }
-    console.log('msgHistory changed:', msgHistory)
   }, [msgHistory]);
 
-  const contextValue = useMemo(() => ({ 
-    msgHistory, 
-    setMsgHistory 
-  }), [msgHistory, setMsgHistory]);
-
   return (
-    <AppContext.Provider value={contextValue}>
+    <AppContext.Provider value={{ msgHistory, setMsgHistory }}>
       {children}
     </AppContext.Provider>
   );

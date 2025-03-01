@@ -16,7 +16,6 @@ export async function GET(req: NextRequest) {
     let text;
 
     if (url) {
-        console.log('url:', url);
         text = await scrapePage(url as string);
         if(text){
             const saved = await saveToCollection(text);
@@ -41,7 +40,6 @@ export async function GET(req: NextRequest) {
         );
     }
     else{
-        console.log('text:', text?.length);
         return NextResponse.json(
             { text },
             { status: 200 }

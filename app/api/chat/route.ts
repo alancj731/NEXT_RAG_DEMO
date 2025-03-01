@@ -13,7 +13,6 @@ export async function POST(req: Request) {
     return new Response("No messages provided", { status: 400 });
   }
 
-  console.log('messages got in backend:', messages)
 
   const lastMessage = messages[messages.length - 1];
 
@@ -61,11 +60,9 @@ export async function POST(req: Request) {
             `,
     };
 
-    console.log("template:", template);
 
     messages.push(template);
     
-    console.log('final messges sent to openAI:', messages)
 
     const result = streamText({
       model: openai("gpt-4o-mini"),
