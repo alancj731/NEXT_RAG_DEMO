@@ -19,16 +19,16 @@ export async function POST(req: Request) {
 
   try {
     try {
-      const ai = myopenai();
-      const embedding = await ai.embeddings.create({
-        model: "text-embedding-3-small",
-        input: lastMessage.content,
-        encoding_format: "float",
-      });
+      // const ai = myopenai();
+      // const embedding = await ai.embeddings.create({
+      //   model: "text-embedding-3-small",
+      //   input: lastMessage.content,
+      //   encoding_format: "float",
+      // });
 
-      console.log("embedding:", embedding.data[0].embedding);
+      // console.log("embedding:", embedding.data[0].embedding);
 
-      if (embedding && embedding.data && embedding.data.length > 0) {
+      // if (embedding && embedding.data && embedding.data.length > 0) {
         const collection = db.collection(NEXT_PUBLIC_ASTRA_DB_COLLECTION || "");
         // const cursor = collection.find({
         //   limit: 3,
@@ -36,21 +36,21 @@ export async function POST(req: Request) {
         // });
         // const documents = await cursor.toArray();
 
-        const documents = await collection
-          .find({
-            $vectorSearch: {
-              queryVector: embedding, // The vector embedding of your query document
-              field: "embedding", // The field containing document embeddings
-              numCandidates: 100, // How many candidates to consider
-              limit: 10, // How many results to return
-            },
-          })
-          .sort({ relevanceScore: -1 }) // Sort by vector search score (highest first)
-          .toArray();
+        const cursor =  collection
+          .find(
+            {},
+            {
+              limit:3,
+              sort:{ $vectorize: lastMessage.content }
+            }
+        );
+
+        const documents = await cursor.toArray();
         const docsMap = documents?.map((doc) => doc.text);
+        console.log("docsMap:", docsMap);
         docContext = JSON.stringify(docsMap);
       }
-    } catch (error) {
+    catch (error) {
       console.error("Error getting documents:", error);
     }
 
@@ -76,6 +76,8 @@ export async function POST(req: Request) {
             `,
     };
 
+    console.log("template:", template);
+
     messages.push(template);
 
     const result = streamText({
@@ -83,7 +85,16 @@ export async function POST(req: Request) {
       messages,
     });
 
-    return result.toDataStreamResponse;
+    // return result.toDataStreamResponse();
+    const readableStream = result.toDataStreamResponse().body;
+    return new Response(readableStream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+      },
+    });
+    
   } catch (error) {
     console.error("Error getting openAi response:", error);
     return new Response("Error getting openAi response", { status: 500 });

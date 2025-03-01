@@ -33,17 +33,17 @@ export async function saveToCollection (content: string){
         const chunks = await splitter.splitText(content);
         
         for (const chunk of chunks){
-            const embedding = await myopenai().embeddings.create({
-                model: 'text-embedding-3-small',
-                input: chunk,
-                encoding_format: 'float'
-            })
+            // const embedding = await myopenai().embeddings.create({
+            //     model: 'text-embedding-3-small',
+            //     input: chunk,
+            //     encoding_format: 'float'
+            // })
             
-            const vector = embedding.data[0].embedding;
+            // const vector = embedding.data[0].embedding;
 
             const result = await collection.insertOne({
-                $vector: vector,
-                text: chunk
+                text: chunk,
+                $vectorize: chunk,
             });
         }
         return true;
