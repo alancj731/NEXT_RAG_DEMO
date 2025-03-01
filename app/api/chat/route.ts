@@ -1,0 +1,98 @@
+import { openai } from "@ai-sdk/openai";
+import { streamText } from "ai";
+import { myopenai } from "@/lib/openai";
+import { db } from "@/repository/astra_db";
+
+// Allow streaming responses up to 30 seconds, used in the vercel EDGE function
+export const maxDuration = 30;
+const { NEXT_PUBLIC_ASTRA_DB_COLLECTION } = process.env;
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  if (!messages || messages.length === 0) {
+    return new Response("No messages provided", { status: 400 });
+  }
+  const lastMessage = messages[messages.length - 1];
+  console.log("lastMessage:", lastMessage);
+
+  let docContext = "";
+
+  try {
+    try {
+      const ai = myopenai();
+      const embedding = await ai.embeddings.create({
+        model: "text-embedding-3-small",
+        input: lastMessage.content,
+        encoding_format: "float",
+      });
+
+      console.log("embedding:", embedding.data[0].embedding);
+
+      if (embedding && embedding.data && embedding.data.length > 0) {
+        const collection = db.collection(NEXT_PUBLIC_ASTRA_DB_COLLECTION || "");
+        // const cursor = collection.find({
+        //   limit: 3,
+        //   sort: {"$vector": embedding.data[0].embedding },
+        // });
+        // const documents = await cursor.toArray();
+
+        const documents = await collection
+          .find({
+            $vectorSearch: {
+              queryVector: embedding, // The vector embedding of your query document
+              field: "embedding", // The field containing document embeddings
+              numCandidates: 100, // How many candidates to consider
+              limit: 10, // How many results to return
+            },
+          })
+          .sort({ relevanceScore: -1 }) // Sort by vector search score (highest first)
+          .toArray();
+        const docsMap = documents?.map((doc) => doc.text);
+        docContext = JSON.stringify(docsMap);
+      }
+    } catch (error) {
+      console.error("Error getting documents:", error);
+    }
+
+    const template = {
+      role: "system",
+
+      content: `You are asking about the following question
+            ---------------------
+            QUESTION START 
+            ${lastMessage}
+            QUESTION END
+            --------------------- 
+            
+            Here are some context documents:
+            ---------------------
+            CONTEXT START 
+            ${docContext}
+            CONTEXT END
+            ---------------------
+            
+            If you can't find answer in the context, you need to answer based on existing knowledge.
+            Don't mention the context documents in your response.
+            `,
+    };
+
+    messages.push(template);
+
+    const result = streamText({
+      model: openai("gpt-4o-mini"),
+      messages,
+    });
+
+    return result.toDataStreamResponse;
+  } catch (error) {
+    console.error("Error getting openAi response:", error);
+    return new Response("Error getting openAi response", { status: 500 });
+  }
+
+  //   const result = streamText({
+  //     model: openai("gpt-4o-mini"),
+  //     messages,
+  //   });
+
+  //   return result.toDataStreamResponse();
+}
