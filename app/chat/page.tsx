@@ -1,9 +1,12 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
 import { User, BotMessageSquare } from "lucide-react";
-import { useEffect} from "react";
+import { useEffect, useState} from "react";
 // import { useMessageStore } from "@/store/messageStore";
 import { useAppContext } from "@/context/AppContext";
+import { Button } from "@/components/ui/button";
+import { v4 as uuidv4 } from 'uuid';
+import { set } from "zod";
 
 export default function Chat() {
   const { setMessages, messages, input, handleInputChange, handleSubmit } =
@@ -11,10 +14,11 @@ export default function Chat() {
   
   // const { msgHistory, setMsgHistory } = useMessageStore();
   const {msgHistory, setMsgHistory} = useAppContext();
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     setMessages([...msgHistory]);
-  },[]);
+  },[refresh]);
 
   useEffect(() => {
     if(messages.length > 1){
@@ -31,17 +35,24 @@ export default function Chat() {
     e.preventDefault();
     handleSubmit(e);
   };
+
+  const resetMsgHistory = () => {
+    const initHistory = [{ id : uuidv4(), role: "assistant" as const, content: "Hello, how can I help you?", parts: [] }]
+    setMsgHistory(initHistory);
+    setRefresh(!refresh); // force refresh
+  };
   
   
   return (
-    <div className="flex flex-col w-full max-w-md py-24 space-y-4 px-2 stretch">
+    <div className="flex flex-col w-full max-w-md py-8 px-2 stretch">
+      <div className="max-h-164 overflow-y-auto">
       {messages.map((m) => (
         <div
-          key={m.id}
-          className={`flex 
-            ${m.role === "user" ? "justify-start" : "justify-end"} 
-            items-start gap-2 p-2`}
-        >
+        key={m.id}
+        className={`flex 
+          ${m.role === "user" ? "justify-start" : "justify-end"} 
+          items-start gap-2 p-2`}
+          >
           {m.role === "user" ? (
             <User size={24} />
           ) : (
@@ -53,10 +64,14 @@ export default function Chat() {
           </div>
         </div>
       ))}
+      </div>
+      <Button variant='outline' className="fixed bottom-30" onClick={resetMsgHistory}>
+        Clear History
+      </Button>
 
-      <form onSubmit={myHandleSubmit} className="flex">
+      <form onSubmit={myHandleSubmit} className="flex"> 
         <input
-          className="fixed dark:bg-zinc-900 bottom-8 w-full max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
+          className="fixed w-[430px] dark:bg-zinc-900 bottom-4 max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
           value={input}
           placeholder="Ask me..."
           onChange={myHandleInputChange}
