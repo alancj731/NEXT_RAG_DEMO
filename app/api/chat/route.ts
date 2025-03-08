@@ -1,6 +1,6 @@
-import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+// import { openai } from "@ai-sdk/openai";
 import { db } from "@/repository/astra_db";
+import { TogetherAiService } from "@/services/together.ai.service";
 
 // Allow streaming responses up to 30 seconds, used in the vercel EDGE function
 export const maxDuration = 30;
@@ -64,12 +64,12 @@ export async function POST(req: Request) {
     messages.push(template);
     
 
-    const result = streamText({
-      model: openai("gpt-4o-mini"),
-      messages,
-    });
+    // const result = streamText({
+    //   model: openai("gpt-4o-mini"),
+    //   messages,
+    // });
 
-    // return result.toDataStreamResponse();
+    const result = await TogetherAiService.getInstance().streamTextFromAI(messages);
     const readableStream = result.toDataStreamResponse().body;
 
     return new Response(readableStream, {
@@ -79,7 +79,6 @@ export async function POST(req: Request) {
         'Connection': 'keep-alive',
       },
     });
-    
   } catch (error) {
     console.error("Error getting openAi response:", error);
     return new Response("Error getting openAi response", { status: 500 });
