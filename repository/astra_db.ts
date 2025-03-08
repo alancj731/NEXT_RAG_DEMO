@@ -1,6 +1,5 @@
 import { DataAPIClient} from "@datastax/astra-db-ts";
 import { splitter } from "@/lib/splitter";
-import { myopenai } from "@/lib/openai";
 
 const {
     NEXT_PUBLIC_ASTRA_DB_KEYSPACE, 
@@ -33,13 +32,6 @@ export async function saveToCollection (content: string){
         const chunks = await splitter.splitText(content);
         
         for (const chunk of chunks){
-            // const embedding = await myopenai().embeddings.create({
-            //     model: 'text-embedding-3-small',
-            //     input: chunk,
-            //     encoding_format: 'float'
-            // })
-            
-            // const vector = embedding.data[0].embedding;
 
             const result = await collection.insertOne({
                 text: chunk,

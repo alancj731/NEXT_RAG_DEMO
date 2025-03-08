@@ -118,6 +118,22 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+.loading {
+  font-weight: bold;
+  display: inline-block;
+  font-family: monospace;
+  font-size: 14px;
+  clip-path: inset(0 3ch 0 0);
+  animation: l 1s steps(4, jump-none) infinite;
+}
+
+@keyframes l {
+  to {
+    clip-path: inset(0)
+  }
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
