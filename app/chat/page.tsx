@@ -6,7 +6,7 @@ import { useEffect, useState} from "react";
 import { useAppContext } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { v4 as uuidv4 } from 'uuid';
-import { set } from "zod";
+import { Trash2 } from "lucide-react";
 
 export default function Chat() {
   const { setMessages, messages, input, handleInputChange, handleSubmit } =
@@ -65,8 +65,8 @@ export default function Chat() {
         </div>
       ))}
       </div>
-      <Button variant='outline' className="fixed bottom-30" onClick={resetMsgHistory}>
-        Clear History
+      <Button variant='ghost' className="fixed bottom-13 left-176 p-0" onClick={resetMsgHistory}>
+        <Trash2 size={24} />
       </Button>
 
       <form onSubmit={myHandleSubmit} className="flex"> 

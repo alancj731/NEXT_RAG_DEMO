@@ -7,7 +7,7 @@ import ImportDropdown from "@/components/ImportDropdown";
 
 export default function Rag() {
   const [, setUrl] = useState("");
-  const [, setFileName] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   async function getUrlData(url: string) {
@@ -36,9 +36,27 @@ export default function Rag() {
     }
   }
 
-  async function handleFileSubmit(fileName: string) {
-    setFileName(fileName);
-    console.log("Have not completed this feature.");
+  async function handleFileSubmit(file: File) {
+    setFile(file);
+    const formData = new FormData();
+    formData.append("file", file);
+    const fileApi = `/api/file`;
+    setIsLoading(true);
+    try {
+      await fetch(fileApi, {
+        method: "POST",
+        body: formData,
+      }).then((res) => res.text());
+      showToast(`File ${file.name} imported successfuly!`, "success");
+    }
+    catch (e) {
+      console.log(e);
+      showToast(`Import file ${file.name} failed!`, "error");
+    }
+    finally {
+      setIsLoading(false);
+    }
+
   }
 
 
