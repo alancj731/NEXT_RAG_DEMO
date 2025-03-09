@@ -2,11 +2,13 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { UIMessage } from "ai";
 import { v4 as uuidv4 } from 'uuid';
+import { sysInfo } from "./system.prompt";
 
 // Define the context type
 interface AppContextType {
   msgHistory: UIMessage[];
   setMsgHistory: (messages: UIMessage[]) => void;
+  resetMsgHistory: () => void;
 }
 
 // Create the context with default values
@@ -14,8 +16,16 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Create a provider component with localStorage persistence
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
-  const id: string = uuidv4();
-  const initialMessage = { id, role: "assistant" as const, content: "Hello, how can I help you?", parts: [] };
+  const systemMessage = { id: uuidv4(), role: "system" as const, content: `
+    You are a candidate for a job opening, try to answer questions about yourself based on the following background information.
+    
+    BEGIN OF BACKGROUND INFORMATION
+    =====================
+    ${sysInfo}
+    =====================
+    END OF BACKGROUND INFORMATION
+    `, parts: [] };
+  const initialMessage = { id : uuidv4(), role: "assistant" as const, content: "Hi, I'm Jian! Welcome to my portfolio webpage", parts: [] };
   
   // Initialize state from localStorage or use default
   const [msgHistory, setMsgHistoryState] = useState<UIMessage[]>(() => {
@@ -34,6 +44,13 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const resetMsgHistory = () => {
+    setMsgHistory([systemMessage, initialMessage]);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('messageHistory', JSON.stringify([systemMessage, initialMessage]));
+    }
+  };
+
   // Sync with localStorage when state changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -42,7 +59,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   }, [msgHistory]);
 
   return (
-    <AppContext.Provider value={{ msgHistory, setMsgHistory }}>
+    <AppContext.Provider value={{ msgHistory, setMsgHistory, resetMsgHistory }}>
       {children}
     </AppContext.Provider>
   );

@@ -69,9 +69,16 @@ export async function POST(req: Request) {
     //   messages,
     // });
 
-    const result = await TogetherAiService.getInstance().streamTextFromAI(messages);
-    const readableStream = result.toDataStreamResponse().body;
-
+    const readableStream = await TogetherAiService.getInstance().streamTextFromAI(messages);
+    
+    // for await (const chunk of result.textStream) {
+    //   console.log(chunk);
+    //   if (chunk.includes("</think>") ) {
+    //     break;
+    //   }
+    // }
+    
+    // const readableStream = result.toDataStreamResponse().body;
     return new Response(readableStream, {
       headers: {
         'Content-Type': 'text/event-stream',

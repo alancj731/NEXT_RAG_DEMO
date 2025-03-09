@@ -1,11 +1,14 @@
 import { createTogetherAI, type TogetherAIProvider } from "@ai-sdk/togetherai";
 import { generateText, streamText } from "ai";
+import { read } from "fs";
 // import Together from "together-ai";
 
 const apiKey = process.env.NEXT_PUBLIC_TOGETHER_AI_API_KEY || "";
 const MODEL =
-  process.env.TOGETHER_MODEL || "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
+  // process.env.TOGETHER_MODEL || "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
   // process.env.TOGETHER_MODEL || "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free";
+  // process.env.TOGETHER_MODEL || 'meta-llama/Llama-Vision-Free'
+  process.env.TOGETHER_MODEL || "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
 
   
 
@@ -61,8 +64,32 @@ export class TogetherAiService {
         model: this.togetherai(MODEL),
         messages: messages,
       }); 
-      console.log("Stream result", result);
-      return result;
+
+      const readableStream = result.toDataStreamResponse().body;
+      
+      if(MODEL !== "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free")
+      {
+        return readableStream;
+      }
+      
+      const textDecoder = new TextDecoder();
+      let thinkFinished = false;
+
+      // remove think information from the stream
+      const transformStream = new TransformStream({
+        async transform(chunk, controller) {
+          if (thinkFinished){
+            controller.enqueue(chunk);
+          }
+          const chunkStr = textDecoder.decode(chunk);
+          if(chunkStr.includes("</think>")){
+            thinkFinished = true;
+          }
+        }
+      });
+
+      return readableStream?.pipeThrough(transformStream);
+
     } catch (e) {
       console.error(e);
       throw e;

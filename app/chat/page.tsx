@@ -19,7 +19,7 @@ export default function Chat() {
   } = useChat();
 
   // const { msgHistory, setMsgHistory } = useMessageStore();
-  const { msgHistory, setMsgHistory } = useAppContext();
+  const { msgHistory, setMsgHistory, resetMsgHistory } = useAppContext();
   const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
@@ -42,23 +42,15 @@ export default function Chat() {
     handleSubmit(e);
   };
 
-  const resetMsgHistory = () => {
-    const initHistory = [
-      {
-        id: uuidv4(),
-        role: "assistant" as const,
-        content: "Hello, how can I help you?",
-        parts: [],
-      },
-    ];
-    setMsgHistory(initHistory);
+  const clearMsgHistory = () => {
+    resetMsgHistory();
     setRefresh(!refresh); // force refresh
   };
 
   return (
     <div className="flex flex-col w-full max-w-md py-8 px-2 stretch">
       <div className="max-h-164 overflow-y-auto">
-        {messages.map((m, index) => (
+        {messages.filter(item => item.role !== 'system').map((m, index) => (
           <div
             key={m.id}
             className={`flex 
@@ -87,7 +79,7 @@ export default function Chat() {
       <Button
         variant="ghost"
         className="fixed bottom-13 left-176 p-0"
-        onClick={resetMsgHistory}
+        onClick={clearMsgHistory}
       >
         <Trash2 size={24} />
       </Button>
