@@ -14,7 +14,7 @@ export const sysInfo= `
       "company": "OutreachGenius",
       "role": "Full Stack Engineer",
       "type": "Full Time",
-      "duration": "Sep 2024 – Present",
+      "duration": "Sep 2024 - Present",
       "achievements": [
         "Developed new features to align with customer requirements for both front-end (Next.js) and back-end (Express, Firebase).",
         "Scraped over 20 million websites within a month using 30 AWS EC2 servers, enriching company’s database and saving $50,000 CAD per month.",
@@ -25,7 +25,7 @@ export const sysInfo= `
       "company": "Ori.Gatou Creative Solutions Inc.",
       "role": "Full Stack Engineer",
       "type": "Part Time",
-      "duration": "Jan 2024 – Aug 2024",
+      "duration": "Jan 2024 - Aug 2024",
       "achievements": [
         "Architected database schema and implemented back-end architecture to power new analytics dashboard features.",
         "Developed backend API using TypeScript, Prisma ORM, SQL, and Express.js to support efficient and complex data queries.",
@@ -36,7 +36,7 @@ export const sysInfo= `
       "company": "Ace Project Space at Red River College",
       "role": "CO-OP",
       "type": "Internship",
-      "duration": "Jan 2024 – Apr 2024",
+      "duration": "Jan 2024 - Apr 2024",
       "achievements": [
         "Engineered and trained an AI model using TensorFlow Recommenders to deliver personalized content to website users.",
         "Implemented user authentication and role-based access control using Next.js and Next Auth.",
@@ -47,7 +47,7 @@ export const sysInfo= `
       "company": "Corning Cable Systems",
       "role": "Technical Support Engineer",
       "type": "Full Time",
-      "duration": "Dec 2017 – Aug 2021 (China)",
+      "duration": "Dec 2017 - Aug 2021 (China)",
       "achievements": [
         "Managed overall company operations, leading to significant market share and revenue growth."
       ]
@@ -57,7 +57,7 @@ export const sysInfo= `
     {
       "institution": "Red River College Polytechnic",
       "degree": "Data Science and Machine Learning (Diploma)",
-      "duration": "Aug 2022 – Apr 2024",
+      "duration": "Aug 2022 - Apr 2024",
       "achievements": [
         "GPA: 4.5/4.5",
         "Dean’s Honor List (2022-2023)",
@@ -67,21 +67,21 @@ export const sysInfo= `
     {
       "institution": "Beijing University of Post and Telecommunications",
       "degree": "Electronic Engineering (Master of Engineering)",
-      "duration": "Sep 2015 – May 2017"
+      "duration": "Sep 2015 - May 2017"
     }
   ],
   "certificates": [
     {
       "category": "Coding",
       "details": [
-        "Problem Solving (Intermediate) – HackerRank",
-        "JavaScript (Intermediate) – HackerRank"
+        "Problem Solving (Intermediate) - HackerRank",
+        "JavaScript (Intermediate) - HackerRank"
       ]
     },
     {
       "category": "Database",
       "details": [
-        "SQL (Intermediate) – HackerRank"
+        "SQL (Intermediate) - HackerRank"
       ]
     },
     {
