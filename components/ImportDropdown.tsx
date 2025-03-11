@@ -9,24 +9,23 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { on } from "events"
 
 type ImportType = "url" | "file" | null
 
 interface ImportDropdownProps {
   onUrlSubmmited: (url: string) => void
-  onFileSubmmited: (fileName: string) => void
+  onFileSubmmited: (file: File) => void
 }
 
 export default function ImportDropdown({ onUrlSubmmited, onFileSubmmited }: ImportDropdownProps) {
   const [importType, setImportType] = useState<ImportType>(null)
   const [url, setUrl] = useState("")
-  const [fileName, setFileName] = useState("")
+  const [file, setFile] = useState<File | null >(null)
   const [isOpen, setIsOpen] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFileName(e.target.files[0].name)
+      setFile(e.target.files[0])
     }
   }
 
@@ -34,12 +33,12 @@ export default function ImportDropdown({ onUrlSubmmited, onFileSubmmited }: Impo
     if (importType === "url") {
       onUrlSubmmited(url)
     } else if (importType === "file") {
-      onFileSubmmited(fileName)
+      if(file) onFileSubmmited(file)
     }
 
     // Reset form after import
     setUrl("")
-    setFileName("")
+    setFile(null)
     setImportType(null)
     setIsOpen(false)
   }
@@ -89,7 +88,7 @@ export default function ImportDropdown({ onUrlSubmmited, onFileSubmmited }: Impo
           <div className="space-y-2">
             <Label htmlFor="file-input">Select File</Label>
             <div className="flex gap-2">
-              <Input id="file-display" placeholder="No file selected" value={fileName} readOnly className="flex-1" />
+              <Input id="file-display" placeholder="No file selected" value={file?.name?? ""} readOnly className="flex-1" />
               <div className="relative">
                 <Button variant="secondary" className="relative">
                   Browse
@@ -103,7 +102,7 @@ export default function ImportDropdown({ onUrlSubmmited, onFileSubmmited }: Impo
               </div>
             </div>
           </div>
-          <Button onClick={handleConfirm} disabled={!fileName}>
+          <Button onClick={handleConfirm} disabled={!file}>
             <Upload className="mr-2 h-4 w-4" />
             Import
           </Button>
@@ -112,4 +111,3 @@ export default function ImportDropdown({ onUrlSubmmited, onFileSubmmited }: Impo
     </div>
   )
 }
-

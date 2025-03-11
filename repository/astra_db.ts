@@ -30,19 +30,14 @@ export async function saveToCollection (content: string){
     try{
         const collection = db.collection(NEXT_PUBLIC_ASTRA_DB_COLLECTION || '');
         
-        const chunks = await splitter.splitText(content);
+        // const chunks = await splitter.splitText(content);
+        const chunks = content.split('\n').filter((chunk) => chunk.length > 5);
         
         for (const chunk of chunks){
-            const embedding = await myopenai().embeddings.create({
-                model: 'text-embedding-3-small',
-                input: chunk,
-                encoding_format: 'float'
-            })
-            
-            const vector = embedding.data[0].embedding;
+            console.log('chunk:', chunk);
 
             const result = await collection.insertOne({
-                $vector: vector,
+                $vectorize: chunk,
                 text: chunk
             });
         }

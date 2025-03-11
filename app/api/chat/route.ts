@@ -19,40 +19,29 @@ export async function POST(req: Request) {
 
   try {
     try {
-      const ai = myopenai();
-      const embedding = await ai.embeddings.create({
-        model: "text-embedding-3-small",
-        input: lastMessage.content,
-        encoding_format: "float",
-      });
+      const collection = db.collection(NEXT_PUBLIC_ASTRA_DB_COLLECTION || "");
 
-      console.log("embedding:", embedding.data[0].embedding);
+      const cursor = collection.find(
+        {},
+        {
+          limit: 3,
+          sort: { $vectorize: lastMessage.content },
+        }
+      );
 
-      if (embedding && embedding.data && embedding.data.length > 0) {
-        const collection = db.collection(NEXT_PUBLIC_ASTRA_DB_COLLECTION || "");
-        // const cursor = collection.find({
-        //   limit: 3,
-        //   sort: {"$vector": embedding.data[0].embedding },
-        // });
-        // const documents = await cursor.toArray();
+      const documents = await cursor.toArray();
+      const docsMap = documents?.map((doc) => doc.text)
+      console.log("docsMap:", docsMap);
 
-        const documents = await collection
-          .find({
-            $vectorSearch: {
-              queryVector: embedding, // The vector embedding of your query document
-              field: "embedding", // The field containing document embeddings
-              numCandidates: 100, // How many candidates to consider
-              limit: 10, // How many results to return
-            },
-          })
-          .sort({ relevanceScore: -1 }) // Sort by vector search score (highest first)
-          .toArray();
-        const docsMap = documents?.map((doc) => doc.text);
-        docContext = JSON.stringify(docsMap);
-      }
+      const transcripts = docsMap.map((item) => ({transcript: item}));
+      console.log("transcripts:", transcripts);      
+      docContext = JSON.stringify(transcripts);
+      console.log("docContext:", docContext);
     } catch (error) {
       console.error("Error getting documents:", error);
+      return new Response("Error getting documents", { status: 200 });
     }
+
 
     const template = {
       role: "system",
@@ -60,7 +49,7 @@ export async function POST(req: Request) {
       content: `You are asking about the following question
             ---------------------
             QUESTION START 
-            ${lastMessage}
+            ${lastMessage.content}
             QUESTION END
             --------------------- 
             
@@ -83,16 +72,18 @@ export async function POST(req: Request) {
       messages,
     });
 
-    return result.toDataStreamResponse;
+    const dataStream = result.toDataStreamResponse();
+
+    return new Response(dataStream.body, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+      },
+    });
+
   } catch (error) {
     console.error("Error getting openAi response:", error);
     return new Response("Error getting openAi response", { status: 500 });
   }
-
-  //   const result = streamText({
-  //     model: openai("gpt-4o-mini"),
-  //     messages,
-  //   });
-
-  //   return result.toDataStreamResponse();
 }
